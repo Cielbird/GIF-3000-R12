@@ -1,0 +1,17 @@
+add A, b, C
+sub a ,B,c
+mult C, D, D
+div A, A, a
+
+mod a,b,d
+and a, b, C
+or a, b, c
+
+
+
+xor c, b, a
+beq b, b, b
+bne a, b, c
+addi a, b, 10
+bz a, 10
+jal b, 20
