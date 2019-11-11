@@ -74,10 +74,14 @@ def parse_format0(op, args, line):
         return f"erreur ligne {line}: registre invalide rs2={rs2}"
 
     # return binary instruction string
-    return (
-        f'{REGISTERS[rd]:02b}{REGISTERS[rs1]:02b}{REGISTERS[rs2]:02b}{OPCODES[op][1]:02b}'
+    binstr = (
+        f'{REGISTERS[rd]:02b}'
+        f'{REGISTERS[rs1]:02b}'
+        f'{REGISTERS[rs2]:02b}'
+        f'{OPCODES[op][1]:02b}'
         f'{OPCODES[op][0]:04b}'
     )
+    return '{:0>3x}'.format(int(binstr, 2))
 
 
 def parse_format1(op, args, line):
@@ -98,9 +102,10 @@ def parse_format1(op, args, line):
         print(f"erreur ligne {line}: valeur invalide {imm}", file=sys.stderr)
 
     # return binary instruction string
-    return (
+    binstr = (
         f'{REGISTERS[rd]:02b}{REGISTERS[rs]:02b}{value:04b}{OPCODES[op]:04b}'
     )
+    return '{:0>3x}'.format(int(binstr, 2))
 
 
 def parse_format2(op, args, line):
@@ -119,9 +124,10 @@ def parse_format2(op, args, line):
         print(f"erreur ligne {line}: valeur invalide {imm}", file=sys.stderr)
 
     # return binary instruction string
-    return (
+    binstr = (
         f'{REGISTERS[rd]:02b}{value:06b}{OPCODES[op]:04b}'
     )
+    return '{:0>3x}'.format(int(binstr, 2))
 
 
 if __name__ == '__main__':
@@ -136,4 +142,5 @@ if __name__ == '__main__':
 
     # compile source
     code = compile(source)
+    print('v2.0 raw')
     print('\n'.join(code))
