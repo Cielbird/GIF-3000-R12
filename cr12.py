@@ -123,10 +123,14 @@ def parse_format2(op, args, line):
     except:
         print(f"erreur ligne {line}: valeur invalide {imm}", file=sys.stderr)
 
-    # return binary instruction string
+    # create binary string
+    if value < 0:
+        # corriger pour le complément à deux
+        value += 64
     binstr = (
         f'{REGISTERS[rd]:02b}{value:06b}{OPCODES[op]:04b}'
     )
+
     return '{:0>3x}'.format(int(binstr, 2))
 
 

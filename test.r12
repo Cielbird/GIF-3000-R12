@@ -13,5 +13,5 @@ xor c, b, a
 beq b, b, b
 bne a, b, c
 addi a, b, 10
-bz a, 10
+bz a, -10
 jal b, 20
