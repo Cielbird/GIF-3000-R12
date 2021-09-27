@@ -2,31 +2,66 @@
 
 import argparse, re, sys
 
-# the per instruction formats: 0, 1, or 2
+# the per instruction formats: 0, 1, 2, 3, 4, or 5
 FORMATS = {
-    'add': 0, 'sub': 0, 'mult': 0, 'div': 0,
-    'mod': 0, 'and': 0, 'or': 0, 'xor': 0,
-    'beq': 0, 'bne': 0, 'blt': 0, 'ble': 0,
-    'addi': 1, 'subi': 1, 'multi': 1, 'divi': 1,
-    'modi': 1, 'shli': 1, 'shri': 1,
-    'ld': 1, 'sd': 1, 'jalr': 1,
-    'jal': 2, 'bz': 2, 'bnz': 2,
+    'nop': 0,
+    'add': 1,
+    'sub': 1,
+    'mult': 1,
+    'div': 1,
+    'mod': 1,
+    'and': 1,
+    'or': 1,
+    'xor': 1,
+    'not': 2,
+    'addi': 3,
+    'subi': 3,
+    'multi': 3,
+    'divi': 3,
+    'modi': 3,
+    'shli': 3,
+    'shri': 3,
+    'ld': 3,
+    'sd': 3,
+    'jalr': 3,
+    'jal': 4,
+    'bz': 5,
+    'bnz': 5,
 }
 
 # the per instruction opcodes
 OPCODES = {
-    'add': (0, 0), 'sub': (0, 1), 'mult': (0, 2), 'div': (0, 3),
-    'mod': (1, 0), 'and': (1, 1), 'or': (1,2), 'xor': (1,3),
-    'beq': (2,0), 'bne': (2,1), 'blt': (2,2), 'ble': (2,3),
-    'addi': 3, 'subi': 4, 'multi': 5, 'divi': 6,
-    'modi': 7, 'shli': 8, 'shri': 9,
-    'ld': 10, 'sd': 11, 'jalr': 12,
-    'jal': 13, 'bz': 14, 'bnz': 15,
+    'not': (0, 0),
+    'add': (0, 1),
+    'sub': (0, 2),
+    'mult': (0, 3),
+    'div': (1, 0),
+    'mod': (1, 1),
+    'and': (1, 2),
+    'or': (1, 3),
+    'xor': (2, 0),
+    'not': (2, 3),
+    'addi': 3,
+    'subi': 4,
+    'multi': 5,
+    'divi': 6,
+    'modi': 7,
+    'shli': 8,
+    'shri': 9,
+    'ld': 10,
+    'sd': 11,
+    'jalr': 12,
+    'jal': 13,
+    'bz': 14,
+    'bnz': 15,
 }
 
 # the architecture register names
 REGISTERS = {
-    'A': 0, 'B': 1, 'C': 2, 'D': 3,
+    'R0': 0,
+    'R1': 1,
+    'R2': 2,
+    'R3': 3,
 }
 
 
@@ -44,34 +79,37 @@ def compile(source):
     # process all statements
     for i, line in enumerate(source, start=1):
 
-        if line.strip() == '':
+        if line.strip() == '' or (line and line[0] == '#'):
+            # skip empty or comment lines
             continue
 
         # separate opcode from arguments
-        op, args = line.split(maxsplit=1)
+        op, *args = line.split(maxsplit=1)
 
-        if FORMATS.get(op) == 0:
-            code.append(parse_format0(op, args.split(','), i))
-        elif FORMATS.get(op) == 1:
-            code.append(parse_format1(op, args.split(','), i))
-        elif FORMATS.get(op) == 2:
-            code.append(parse_format2(op, args.split(','), i))
-        else:
-            print(f"erreur ligne {i+1}: opcode invalide {op}", file=sys.stderr)
+        try:
+            code.append(FORMAT_PARSERS[FORMATS[op]](op, args[0].split(','), i))
+
+        except Exception:
+            print(f"erreur ligne {i}: opcode invalide {op}", file=sys.stderr)
 
     return code
 
 
 def parse_format0(op, args, line):
+    """Parse the nop instruction format: 'nop'."""
+    return '{:0>3x}'.format(0)
+
+
+def parse_format1(op, args, line):
     """Parse the first instruction format: 'op rd, rs1, rs2'."""
     rd, rs1, rs2 = map(str.strip, map(str.upper, args))
 
     if not rd in REGISTERS:
-        return f"erreur ligne {line}: registre invalide rd={rd}"
+        print(f"erreur ligne {line}: registre invalide {rd}", file=sys.stderr)
     if not rs1 in REGISTERS:
-        return f"erreur ligne {line}: registre invalide rs1={rs1}"
+        print(f"erreur ligne {line}: registre invalide {rs1}", file=sys.stderr)
     if not rs2 in REGISTERS:
-        return f"erreur ligne {line}: registre invalide rs2={rs2}"
+        print(f"erreur ligne {line}: registre invalide {rs2}", file=sys.stderr)
 
     # return binary instruction string
     binstr = (
@@ -84,14 +122,33 @@ def parse_format0(op, args, line):
     return '{:0>3x}'.format(int(binstr, 2))
 
 
-def parse_format1(op, args, line):
-    """Parse the second instruction format: 'op rd, rs1, imm'."""
-    rd, rs, imm = map(str.strip, map(str.upper, args))
+def parse_format2(op, args, line):
+    """Parse the second instruction format: 'op rd, rs1'."""
+    rd, rs1 = map(str.strip, map(str.upper, args))
 
     if not rd in REGISTERS:
         print(f"erreur ligne {line}: registre invalide {rd}", file=sys.stderr)
-    if not rs in REGISTERS:
-        print(f"erreur ligne {line}: registre invalide {rs}", file=sys.stderr)
+    if not rs1 in REGISTERS:
+        print(f"erreur ligne {line}: registre invalide {rs1}", file=sys.stderr)
+
+    # return binary instruction string
+    binstr = (
+        f'{REGISTERS[rd]:02b}'
+        f'{REGISTERS[rs1]:02b}'
+        f'11'
+        f'{OPCODES[op]:04b}'
+    )
+    return '{:0>3x}'.format(int(binstr, 2))
+
+
+def parse_format3(op, args, line):
+    """Parse the second instruction format: 'op rd, rs1, imm'."""
+    rd, rs1, imm = map(str.strip, map(str.upper, args))
+
+    if not rd in REGISTERS:
+        print(f"erreur ligne {line}: registre invalide {rd}", file=sys.stderr)
+    if not rs1 in REGISTERS:
+        print(f"erreur ligne {line}: registre invalide {rs1}", file=sys.stderr)
 
     try:
         value = int(imm)
@@ -99,21 +156,25 @@ def parse_format1(op, args, line):
             print(f"erreur ligne {line}: valeur invalide {value}", file=sys.stderr)
 
     except:
+        value = 0
         print(f"erreur ligne {line}: valeur invalide {imm}", file=sys.stderr)
 
     # return binary instruction string
     binstr = (
-        f'{REGISTERS[rd]:02b}{REGISTERS[rs]:02b}{value:04b}{OPCODES[op]:04b}'
+        f'{REGISTERS[rd]:02b}'
+        f'{REGISTERS[rs1]:02b}'
+        f'{value:04b}'
+        f'{OPCODES[op]:04b}'
     )
     return '{:0>3x}'.format(int(binstr, 2))
 
 
-def parse_format2(op, args, line):
-    """Parse the third instruction format: 'op rd, imm'."""
-    rd, imm = map(str.strip, map(str.upper, args))
+def parse_format4(op, args, line):
+    """Parse the third instruction format: 'op rs, imm'."""
+    rs, imm = map(str.strip, map(str.upper, args))
 
-    if not rd in REGISTERS:
-        print(f"erreur ligne {line}: registre invalide {rd}", file=sys.stderr)
+    if not rs in REGISTERS:
+        print(f"erreur ligne {line}: registre invalide {rs}", file=sys.stderr)
 
     try:
         value = int(imm)
@@ -121,6 +182,7 @@ def parse_format2(op, args, line):
             print(f"erreur ligne {line}: valeur invalide {value}", file=sys.stderr)
 
     except:
+        value = 0
         print(f"erreur ligne {line}: valeur invalide {imm}", file=sys.stderr)
 
     # create binary string
@@ -128,10 +190,21 @@ def parse_format2(op, args, line):
         # corriger pour le complément à deux
         value += 64
     binstr = (
-        f'{REGISTERS[rd]:02b}{value:06b}{OPCODES[op]:04b}'
+        f'{REGISTERS[rs]:02b}'
+        f'{value:06b}'
+        f'{OPCODES[op]:04b}'
     )
 
     return '{:0>3x}'.format(int(binstr, 2))
+
+
+FORMAT_PARSERS = [
+    parse_format0,
+    parse_format1,
+    parse_format2,
+    parse_format3,
+    parse_format4,
+]
 
 
 if __name__ == '__main__':

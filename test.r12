@@ -1,3 +1,4 @@
+add r0, r1, r2
 add A, b, C
 sub a ,B,c
 mult C, D, D
@@ -13,5 +14,5 @@ xor c, b, a
 beq b, b, b
 bne a, b, c
 addi a, b, 10
-bz a, -10
+bnz b, -6
 jal b, 20
