@@ -1,18 +1,17 @@
-add r0, r1, r2
-add A, b, C
-sub a ,B,c
-mult C, D, D
-div A, A, a
 
-mod a,b,d
-and a, b, C
-or a, b, c
+nop
+not r0, r1
+add R0, r1, r2
+add r0, r0, r1
+sub r0, r0, r1
+mult r0, r0, r1
+div r0, r0, r1
 
+mod r0, r0, r1
+and r0, r0, r1
+or r0, r0, r1
 
+xor r0, r0, r1
 
-xor c, b, a
-beq b, b, b
-bne a, b, c
-addi a, b, 10
-bnz b, -6
-jal b, 20
+bnz r0, -6
+jal r3, 20
