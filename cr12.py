@@ -150,8 +150,8 @@ def parse_format2(op, args, line):
 
 
 def parse_format3(op, args, line):
-    """Parse the second instruction format: 'op rd, rs1, imm'."""
-    rd, rs1, imm = map(str.strip, map(str.upper, args))
+    """Parse the second instruction format: 'op rd, rs1, imm4'."""
+    rd, rs1, imm4 = map(str.strip, map(str.upper, args))
 
     if not rd in REGISTERS:
         print(f"erreur ligne {line}: registre invalide {rd}", file=sys.stderr)
@@ -160,13 +160,13 @@ def parse_format3(op, args, line):
         print(f"erreur ligne {line}: registre invalide {rs1}", file=sys.stderr)
 
     try:
-        value = int(imm)
+        value = int(imm4)
         if not 0 <= value <= 15:
             print(f"erreur ligne {line}: valeur invalide {value}", file=sys.stderr)
 
     except:
         value = 0
-        print(f"erreur ligne {line}: valeur invalide {imm}", file=sys.stderr)
+        print(f"erreur ligne {line}: valeur invalide {imm4}", file=sys.stderr)
 
     # return binary instruction string
     binstr = (
@@ -180,20 +180,20 @@ def parse_format3(op, args, line):
 
 
 def parse_format4(op, args, line):
-    """Parse the third instruction format: 'op rs, imm'."""
-    rs, imm = map(str.strip, map(str.upper, args))
+    """Parse the third instruction format: 'op rs, imm6'."""
+    rs, imm6 = map(str.strip, map(str.upper, args))
 
     if not rs in REGISTERS:
         print(f"erreur ligne {line}: registre invalide {rs}", file=sys.stderr)
 
     try:
-        value = int(imm)
+        value = int(imm6)
         if not -32 <= value <= 31:
             print(f"erreur ligne {line}: valeur invalide {value}", file=sys.stderr)
 
     except:
         value = 0
-        print(f"erreur ligne {line}: valeur invalide {imm}", file=sys.stderr)
+        print(f"erreur ligne {line}: valeur invalide {imm6}", file=sys.stderr)
 
     # create binary string
     if value < 0:

@@ -7,10 +7,11 @@ redirigez simplement la console vers le fichier:
 
   > ./cr12.py prog.r12 > prog.bin
 
-Le compilateur supporte les trois formats d'instruction suivants:
+Le compilateur supporte les formats d'instruction suivants:
 1. `op rd, rs1, rs2`
-2. `op rd, rs1, imm4`
-3. `op rd, imm6`
+2. `op rd, rs1`
+3. `op rd, rs1, imm4`
+4. `op rs, imm6`
 
 où `rd`, `rs1` et `rs2` sont l'un ou l'autre des quatre registres d'**architecture** R1, R2, R3 ou R4,
 et où `imm4` et `imm6` sont des valeurs entières (constantes) de quatre (4) ou six (6) bits.
