@@ -13,7 +13,7 @@ Le compilateur supporte les formats d'instruction suivants:
 3. `op rd, rs1, imm4`
 4. `op rs, imm6`
 
-où `rd`, `rs1` et `rs2` sont l'un ou l'autre des quatre registres d'**architecture** R1, R2, R3 ou R4,
+où `rd`, `rs1` et `rs2` sont l'un ou l'autre des quatre registres d'**architecture** R0, R1, R2 ou R3,
 et où `imm4` et `imm6` sont des valeurs entières (constantes) de quatre (4) ou six (6) bits.
 Notez que chaque instruction doit se trouver sur une ligne distincte, et que les lignes blanches
 sont permises. Il n'y a pour l'instant **aucun** support pour définir des étiquettes de branchement.
