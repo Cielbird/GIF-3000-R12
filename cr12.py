@@ -74,23 +74,40 @@ def compile(source):
 
     :returns: the list of binary string instructions.
     """
+    code_lines = [] # follows: (line, line_num, address)
+    tags = {}
+    address = 0
+
     code = []
 
-    # process all statements
+    # collect instructions and branch tags
     for i, line in enumerate(source, start=1):
-        # strip any white space
+        # strip any comments and white space
+        line = line.split('#', 1)[0]
         line = line.strip()
 
-        if not line or line[0] == '#':
+        if not line:
             # skip empty or comment lines
             continue
 
+        match = re.match(r"^([A-Za-z]+):$", line)
+        if match:
+            # branch tag
+            tags[match.group(1)] = address
+        else:
+            # instruction
+            code_lines.append((line, i, address))
+            address += 1
+
+    # process all statements and resolve tags
+    for line, line_num, address in code_lines:
         # separate opcode from arguments
         op, *args = line.split(maxsplit=1)
 
         try:
             code.append(
-                FORMAT_PARSERS[FORMATS[op]](op, args[0].split(',') if args else None, i)
+                FORMAT_PARSERS[FORMATS[op]](op, args[0].split(',') if args else None,
+                                            line_num, address, tags)
             )
 
         except Exception as err:
@@ -99,12 +116,12 @@ def compile(source):
     return code
 
 
-def parse_format0(op, args, line):
+def parse_format0(op, args, line, addr, tags):
     """Parse the nop instruction format: 'nop'."""
     return '{:0>3x}'.format(0)
 
 
-def parse_format1(op, args, line):
+def parse_format1(op, args, line, addr, tags):
     """Parse the first instruction format: 'op rd, rs1, rs2'."""
     rd, rs1, rs2 = map(str.strip, map(str.upper, args))
 
@@ -129,7 +146,7 @@ def parse_format1(op, args, line):
     return '{:0>3x}'.format(int(binstr, 2))
 
 
-def parse_format2(op, args, line):
+def parse_format2(op, args, line, addr, tags):
     """Parse the second instruction format: 'op rd, rs1'."""
     rd, rs1 = map(str.strip, map(str.upper, args))
 
@@ -149,7 +166,7 @@ def parse_format2(op, args, line):
     return '{:0>3x}'.format(int(binstr, 2))
 
 
-def parse_format3(op, args, line):
+def parse_format3(op, args, line, addr, tags):
     """Parse the second instruction format: 'op rd, rs1, imm4'."""
     rd, rs1, imm4 = map(str.strip, map(str.upper, args))
 
@@ -179,8 +196,8 @@ def parse_format3(op, args, line):
     return '{:0>3x}'.format(int(binstr, 2))
 
 
-def parse_format4(op, args, line):
-    """Parse the third instruction format: 'op rs, imm6'."""
+def parse_format4(op, args, line, addr, tags):
+    """Parse the third instruction format: 'op rs, imm6'. imm6 can be a branch tag."""
     rs, imm6 = map(str.strip, map(str.upper, args))
 
     if not rs in REGISTERS:
@@ -192,8 +209,14 @@ def parse_format4(op, args, line):
             print(f"erreur ligne {line}: valeur invalide {value}", file=sys.stderr)
 
     except:
-        value = 0
-        print(f"erreur ligne {line}: valeur invalide {imm6}", file=sys.stderr)
+        if imm6 in tags:
+            # calculer la valeur de imm6 pour brancher à l'étiquette
+            value = tags[imm6]-addr
+            if not -32 <= value <= 31:
+                print(f"erreur ligne {line}: valeur invalide {value}", file=sys.stderr)
+        else:
+            value = 0
+            print(f"erreur ligne {line}: valeur invalide {imm6}", file=sys.stderr)
 
     # create binary string
     if value < 0:
